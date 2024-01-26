@@ -59,17 +59,32 @@ public class Main {
 
         Multiworld start = new Multiworld();
         start.name = "start";
+
+        Multiworld end = new Multiworld();
+        end.name = "end";
+
         LinkedList<Game> personsGames = new LinkedList<>();
         for (String name : players){
             personsGames.clear();
-            for (Game game : games){
-                if (name.equals(game.player)) {
-                    personsGames.add(game);
-                }
-            }
+            getPersonsGames(name, personsGames);
+
             int randInt = rand.nextInt(0,personsGames.size());
             start.games.add(personsGames.get(randInt));
             games.remove(personsGames.get(randInt));
+        }
+
+        if (input.allInEnding){
+            for (String name : players){
+                personsGames.clear();
+                getPersonsGames(name, personsGames);
+                if (personsGames.isEmpty()){
+                    continue;
+                }
+
+                int randInt = rand.nextInt(0,personsGames.size());
+                end.games.add(personsGames.get(randInt));
+                games.remove(personsGames.get(randInt));
+            }
         }
 
         System.out.println(gson.toJson(start) + "\n");
@@ -94,6 +109,15 @@ public class Main {
                 applicableActions.add(PathActions.CONTINUE);
             }
             if (openGames < input.gamesPerMidWorld){
+                if (input.allInEnding){
+                    connectWorlds(unconnected.get(0), "game"+count);
+                    output.worlds.add(unconnected.get(0));
+                    unconnected.remove(0);
+
+                    unconnected.add(new Multiworld());
+                    unconnected.get(unconnected.size()-1).name = "game"+count;
+                    unconnected.get(unconnected.size()-1).games.addAll(games);
+                }
                 break;
             }
 
@@ -137,10 +161,9 @@ public class Main {
         output.worlds.addAll(unconnected);
 
         if (!input.allInEnding){
-            output.worlds.add(new Multiworld());
-            output.worlds.get(output.worlds.size()-1).name = "end";
-            output.worlds.get(output.worlds.size()-1).games.addAll(games);
+            end.games.addAll(games);
         }
+        output.worlds.add(end);
 
         System.out.println(gson.toJson(output));
     }
@@ -157,6 +180,14 @@ public class Main {
 
         br.close();
         return sb.toString();
+    }
+
+    public static void getPersonsGames(String person, LinkedList personsGames){
+        for (Game game : games){
+            if (person.equals(game.player)) {
+                personsGames.add(game);
+            }
+        }
     }
 
     public static void connectWorlds(Multiworld source, String connection){
