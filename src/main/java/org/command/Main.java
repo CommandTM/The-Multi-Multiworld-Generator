@@ -3,7 +3,12 @@ package org.command;
 import com.google.gson.Gson;
 
 import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.Random;
 
@@ -14,8 +19,10 @@ public class Main {
     static LinkedList<String> players = new LinkedList<>();
     static LinkedList<Game> games = new LinkedList<>();
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         JFileChooser dialog = new JFileChooser();
+        FileNameExtensionFilter filter = new FileNameExtensionFilter("json/txt", "txt", "json");
+        dialog.setFileFilter(filter);
         int returnVal = dialog.showOpenDialog(null);
         if (returnVal == JFileChooser.APPROVE_OPTION){
             file = dialog.getSelectedFile().getAbsoluteFile();
@@ -166,6 +173,12 @@ public class Main {
         output.worlds.add(end);
 
         System.out.println(gson.toJson(output));
+        dialog.setFileSelectionMode(JFileChooser.SAVE_DIALOG);
+        dialog.setFileFilter(null);
+        returnVal = dialog.showOpenDialog(null);
+        if(returnVal == JFileChooser.APPROVE_OPTION){
+            Files.write(Paths.get(dialog.getSelectedFile().getAbsolutePath()), Collections.singleton(gson.toJson(output)), StandardCharsets.UTF_8);
+        }
     }
 
     public static String readJSON(File input) throws IOException {
